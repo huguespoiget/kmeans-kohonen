@@ -3,7 +3,7 @@
 #include <cmath>
 #include <limits>
 
-void learnProto(double alpha, Prototypes::imagette& w, const uci::Database::imagette& xi)
+void learnProtoKmean(double alpha, Prototypes::imagette& w, const uci::Database::imagette& xi)
 {
 	for(int i=0 ; i < uci::Database::imagette::height ; ++i)
 	{

@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
 		cpt++;
 	}
 	// Utilisons notre fonction de copie pour affecter un prototype à la valeur de l'imagette.
-	//initProto(prototypes(2,3),xi);
+	//initProto(prototypes(0,3),xi);
 
 	// On affiche a nopuveau la grille de prototypes.
 	//prototypes.PPM("proto",2);

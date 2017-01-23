@@ -1,14 +1,21 @@
 #include "Base.h"
 
+// We place the prototypes in a grid
 // On va stocker les imagettes-prototypes au sein d'une grille.
-#define WIDTH  5
-#define HEIGHT 4
-typedef uci::Map<WIDTH,HEIGHT,
-	uci::Database::imagette::width,
-	uci::Database::imagette::height> Prototypes;
+#define WIDTH 12
+#define HEIGHT 12
+// Need a parameter R for Kohonen
+// On positionne le paramètre pour Kohonen
+#define R 3
+typedef uci::Map<WIDTH,HEIGHT, uci::Database::imagette::width, uci::Database::imagette::height> Prototypes;
 
+//We include the k-means-online.cpp	which contains functions dedicated to k-means-oline algorithm
 #include "k-means-online.cpp"
-// Pour une imagette, les indices sont definis comme suit
+//We include also kohonen.cpp which contains functions dedicated to kohonen algorithm
+#include "kohonen.cpp"
+
+// For a picture (or prototype, or dataset entry), we define i,j as below:
+// Pour une imagette, les indices sont definis comme suit :
 //
 //         j
 //         |
@@ -24,12 +31,13 @@ typedef uci::Map<WIDTH,HEIGHT,
 //   ............
 //   ............  
 
-
+//That function allows to assign a prototype (whom pixels are doubles
+// in range [0,255]) to a picture from the dataset (whom the pixels
+// are unsigned chars). & avoid usless copies.
 // Cette fonction permet d'affecter un prototype (dont les pixels sont
 // des double dans [0,255]) a une imagette tiree de la base (dont les
 // pixels sont des unsigned char). Le & evite les copies inutiles.
-void initProto(Prototypes::imagette& w,
-		const uci::Database::imagette& xi) {
+void initProto(Prototypes::imagette& w, const uci::Database::imagette& xi) {
 	for(int i = 0 ; i < uci::Database::imagette::height ; ++i)
 		for(int j = 0 ; j < uci::Database::imagette::width ; ++j)
 			w(i,j) = (double)(xi(i,j));
@@ -38,9 +46,11 @@ void initProto(Prototypes::imagette& w,
 int main(int argc, char* argv[]) {
 	Prototypes prototypes;
 
+	// We can show the grid of prototypes
 	// On peut afficher la grille de prototypes.
 	prototypes.PPM("proto",1);
 
+	// We'll use the dataset
 	// Utilisons la base de donnees.
 	uci::Database database;
 
@@ -48,63 +58,58 @@ int main(int argc, char* argv[]) {
 	int j(0);
 	int cpt(0);  
 
-	// Pour obtenir une nouvelle imagette...
-	while(cpt<100){
-
-		database.Next();
-
-		uci::Database::imagette& xi = database.input; // le & fait que xi est un pointeur, on evite une copie.
-		std::cout << "L'imagette tiree de la base est un " << database.what << std::endl;
-
-		winnerProto(prototypes, xi, i, j);
-		learnProto(10e-2,prototypes(i,j),xi);
-		prototypes.PPM("proto",cpt + 2);
-
-		cpt++;
-	}
-
 	//Ici on va utiliser une initialisation plus smart
-	for(int u=0 ; u < HEIGHT ; ++u)
-	{
-		for(int v=0 ; v < WIDTH ; ++v)
-		{
+	for(int u=0 ; u < HEIGHT ; ++u) {
+		for(int v=0 ; v < WIDTH ; ++v) {
 			database.Next();
-	uci::Database::imagette& xi = database.input; // le & fait que xi est un pointeur, on evite une copie.
-	std::cout << "L'imagette tiree de la base pour initiliaser les prototypes est un " << database.what << std::endl;
+			uci::Database::imagette& xi = database.input; 
+			std::cout << "The entry drawn from the dataset to initialize a prototype is a " << database.what << std::endl;
+			std::cout << "L'imagette tiree de la base pour initiliaser les prototypes est un " << database.what << std::endl;
 			initProto(prototypes(u,v),xi);
 		}
 	} 
-	prototypes.PPM("proto",cpt +2);
-	++cpt;
-	//Ensuite on relanc les k-means sur cette nouvelle initialisation
 
-	while(cpt<600){
-
+	while(cpt<5000) {
 		database.Next();
 
 		uci::Database::imagette& xi = database.input; // le & fait que xi est un pointeur, on evite une copie.
 		std::cout << "L'imagette tiree de la base est un " << database.what << std::endl;
 
 		winnerProto(prototypes, xi, i, j);
-		learnProto(10e-2,prototypes(i,j),xi);
-		prototypes.PPM("proto",cpt + 2);
-
+		learnProtoKmean(10e-2,prototypes(i,j),xi);
+		prototypes.PPM("kmeansGrid",cpt);
+		
 		cpt++;
 	}
-	// Utilisons notre fonction de copie pour affecter un prototype à la valeur de l'imagette.
-	//initProto(prototypes(2,3),xi);
 
-	// On affiche a nopuveau la grille de prototypes.
-	//prototypes.PPM("proto",2);
+	for(int u=0 ; u < HEIGHT ; ++u) {
+		for(int v=0 ; v < WIDTH ; ++v) {
+			database.Next();
+			uci::Database::imagette& xi = database.input; 
+			std::cout << "The entry drawn from the dataset to initialize a prototype is a " << database.what << std::endl;
+			std::cout << "L'imagette tiree de la base pour initiliaser les prototypes est un " << database.what << std::endl;
+			initProto(prototypes(u,v),xi);
+		}
+	} 
 
-	// Pour obtenir une nouvelle imagette...
-	//database.Next();
+	while(cpt<10000) {
+		database.Next();
 
-	// Utilisons notre fonction de copie pour affecter un prototype à la valeur de l'imagette.
-	//initProto(prototypes(1,1),xi);
+		uci::Database::imagette& xi = database.input; // le & fait que xi est un pointeur, on evite une copie.
+		std::cout << "L'imagette tiree de la base est un " << database.what << std::endl;
 
-	// On affiche a nopuveau la grille de prototypes.
-	//prototypes.PPM("proto",3);
+		winnerProto(prototypes, xi, i, j);
+		for(int u=0 ; u < HEIGHT ; ++u)
+		{
+			for(int v=0 ; v < WIDTH ; ++v)
+			{
+				learnProtoKohonen(10e-2,prototypes(u,v),xi,i,j,u,v);
+			}
+		}
+		prototypes.PPM("kmeansGrid",cpt);
+		
+		cpt++;
+	}
 
 	return 0;
 }
