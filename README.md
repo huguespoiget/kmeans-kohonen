@@ -16,6 +16,11 @@ The differences between K-means and Kohonen are firt the design of another dista
 
 The easiest to understand is to watch the kohonen.avi
 
+If you want to re-execute the code, download the repository, open a terminal and type the following:
+>>> g++ -o Main -Wall -ansi -O3 main.cpp
+>>> ./Main
+>>> avconv -i kmeansGrid-%06d.ppm -b:v 1M kmeanOwnVideo.avi
+
 #----------------------------#
 
 FRENCH VERSION:
@@ -30,3 +35,13 @@ Les deux principales conditions à respecter pour faire fonctionner correctement
 La différence avec l’algorithme des cartes de Kohonen est d’abord la définition d’une seconde distance entre les prototypes (d’où le nom de « carte » de Kohonen). Lorsqu’un prototype est élu au sens de la proximité de la première distance qu’on s’est donnée (entre un échantillon et un prototype) on ne se contente non pas seulement de rapprocher le prototype élu de l’échantillon suivant un coefficient d’apprentissage mais également les prototypes « proches » du prototype élu au sens de la deuxième distance qu’on s’est défini avec un coefficient d’apprentissage qui dépend de la valeur de cette distance (plus un prototype est éloigné du prototype élu moins il « apprend »).
 
 Le plus simple est encore de constater ce que ça donne en image avec la vidéo kohonen.avi ci-jointe.
+
+Si vous voulez ré-executer le code, télécharger le repo Git, ouvrez un terminal et tappez les commandes suivantes :
+>>> g++ -o Main -Wall -ansi -O3 main.cpp
+>>> ./Main
+>>> avconv -i kmeansGrid-%06d.ppm -b:v 1M kmeanOwnVideo.avi
+
+#----------------------------#
+
+Src:
+http://archive.ics.uci.edu/ml/ for the dataset
